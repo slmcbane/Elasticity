@@ -1,10 +1,32 @@
+/*
+ * Copyright 2022 Sean McBane
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
 #ifndef MESH_TOOLS_HPP
 #define MESH_TOOLS_HPP
 
-#include "mesh_traits.hpp"
-
 #include <functional>
 #include <optional>
+
+#include "mesh_traits.hpp"
 
 namespace Elasticity
 {
@@ -28,10 +50,10 @@ std::optional<size_t> find_boundary_with_tag(const MeshVariant &mesh, std::strin
 
 /*
  * Get a CurveMesh of the boundary with index "bindex". Note that the curve mesh
- * is represented as flattened, with one X coordinate running from 0 to the length
- * of the boundary. Coordinates of the endpoints of each line element in 2 dimensional
- * space can be retrieved using get_element_endpoints(eli) and used to do calculations
- * in 2 dimensions.
+ * is represented as flattened, with one X coordinate running from 0 to the
+ * length of the boundary. Coordinates of the endpoints of each line element in
+ * 2 dimensional space can be retrieved using get_element_endpoints(eli) and
+ * used to do calculations in 2 dimensions.
  */
 template <class Mesh>
 CurveMesh<msh::element_order<Mesh>> get_boundary_mesh(const Mesh &mesh, size_t bindex)
@@ -63,7 +85,8 @@ auto evaluate_on_boundary(const Mesh &mesh, size_t which, const F &func)
     static_assert(
         std::is_same_v<result_type, double> ||
             std::is_base_of_v<Eigen::MatrixBase<result_type>, result_type>,
-        "The result type of invoking func should either be a double or an Eigen vector");
+        "The result type of invoking func should either be a double or an "
+        "Eigen vector");
 
     if constexpr (std::is_same_v<result_type, double>)
     {
@@ -114,7 +137,8 @@ auto evaluate_on_mesh(const Mesh &mesh, const F &func)
     static_assert(
         std::is_same_v<result_type, double> ||
             std::is_base_of_v<Eigen::MatrixBase<result_type>, result_type>,
-        "The result type of invoking func should either be a double or an Eigen vector");
+        "The result type of invoking func should either be a double or an "
+        "Eigen vector");
 
     if constexpr (std::is_same_v<result_type, double>)
     {
@@ -151,9 +175,9 @@ auto evaluate_on_mesh(const MeshVariant &mv, const F &func)
 }
 
 /*
- * Higher-order meshes have nodes internal to elements to which we cannot meaningfully
- * assign coordinates in the mesh package. This function does the work for third and
- * fourth order meshes to fill the coordinates.
+ * Higher-order meshes have nodes internal to elements to which we cannot
+ * meaningfully assign coordinates in the mesh package. This function does the
+ * work for third and fourth order meshes to fill the coordinates.
  */
 template <class Mesh>
 void fill_internal_coordinates(Mesh &mesh)

@@ -1,15 +1,37 @@
+/*
+ * Copyright 2022 Sean McBane
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
 #ifndef LINEAR_ELASTICITY_HPP
 #define LINEAR_ELASTICITY_HPP
+
+#include <Eigen/Core>
+#include <cassert>
+#include <exception>
 
 #include "C0_triangles.hpp"
 #include "Galerkin.hpp"
 #include "SymSparse.hpp"
 #include "mesh_traits.hpp"
 #include "src/FunctionBase.hpp"
-
-#include <Eigen/Core>
-#include <cassert>
-#include <exception>
 
 namespace Elasticity
 {
@@ -84,7 +106,8 @@ auto get_vector_coeffs(const Mesh &mesh, size_t eli, const Eigen::Matrix2Xd &uc)
 
 /*
  * Given the coefficients of a function u in the finite element basis for el,
- * construct a function object that evaluates that function (and whose derivatives,
+ * construct a function object that evaluates that function (and whose
+derivatives,
  * etc. can be used).
  */
 template <class Element>
@@ -97,9 +120,9 @@ auto make_function(const Element &, const coeffs_type<Element> &uc)
 }
 
 /*
- * Given the coefficients of a *vector* function u in the finite element basis for
- * el, construct 2 function objects evaluating the X and Y parts of the vector
- * function.
+ * Given the coefficients of a *vector* function u in the finite element basis
+ * for el, construct 2 function objects evaluating the X and Y parts of the
+ * vector function.
  */
 template <class Element>
 auto make_vector_functions(const Element &el, const vector_coeffs_type<Element> &uc)
@@ -436,9 +459,9 @@ inline Eigen::Matrix2Xd integrate_volume_force(const MeshVariant &mv, const Eige
 }
 
 /*
- * Where fc is a matrix containing coefficients of the X and Y parts of a traction force on
- * boundary bound_index, integrates this traction force to find its contribution to the
- * linear form vector.
+ * Where fc is a matrix containing coefficients of the X and Y parts of a
+ * traction force on boundary bound_index, integrates this traction force to
+ * find its contribution to the linear form vector.
  */
 template <class Mesh>
 Eigen::Matrix2Xd
@@ -471,8 +494,8 @@ integrate_traction_force(const MeshVariant &mv, size_t bound_index, const Eigen:
 
 /*
  * Where 'traction' is an integrated traction force on boundary 'bindex',
- * as returned from 'integrate_traction_force', adds this force to the appropriate
- * columns of 'forcing' (which, for example, might have come from
+ * as returned from 'integrate_traction_force', adds this force to the
+ * appropriate columns of 'forcing' (which, for example, might have come from
  * 'integrate_volume_force'.)
  */
 void add_traction_force(
@@ -481,8 +504,9 @@ void add_traction_force(
 
 /*
  * Where u_true is a function taking X and Y coordinates and u is a matrix with
- * coefficients of X and Y parts of a FEM solution in its columns, compute the L^2 norm of
- * u - u_true and of u_true. Used for manufactured solution verification.
+ * coefficients of X and Y parts of a FEM solution in its columns, compute the
+ * L^2 norm of u - u_true and of u_true. Used for manufactured solution
+ * verification.
  */
 std::pair<double, double> integrate_error(
     const MeshVariant &mesh, const Eigen::Matrix2Xd &u,
