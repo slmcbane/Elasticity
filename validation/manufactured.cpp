@@ -23,6 +23,7 @@
 
 #include "convert_to_eigen.hpp"
 #include "elasticity.hpp"
+#include "get_triangles.hpp"
 #include "mesh_tools.hpp"
 #include "read_mesh.hpp"
 
@@ -255,7 +256,22 @@ int main(int argc, char *argv[])
         }
         fclose(infile);
         auto mesh = read_mesh(argv[fi], order);
+        FILE *outfile = fopen("mesh_elements.dat", "wb");
+        if (!outfile)
+        {
+            fprintf(stderr, "Skipping output, couldn't open file\n");
+        }
+        else
+        {
+            get_triangle_info(mesh).serialize(outfile);
+            fclose(outfile);
+        }
         Eigen::Matrix2Xd u = solve(mesh);
+        outfile = fopen("u.dat", "wb");
+        int64_t dims[] = {u.rows(), u.cols()};
+        fwrite(dims, sizeof(int64_t), 2, outfile);
+        fwrite(u.data(), sizeof(double), u.size(), outfile);
+        fclose(outfile);
 
         auto [l2_error, u_norm] = Elasticity::integrate_error(mesh, u, u_true);
 
