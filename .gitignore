@@ -1,0 +1,5 @@
+subprojects/Eigen
+subprojects/TetMesh
+subprojects/SmallVector
+subprojects/SymSparse
+subprojects/Galerkin
