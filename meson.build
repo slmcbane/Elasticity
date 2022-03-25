@@ -46,7 +46,8 @@ libelasticity = library('elasticity',
          'add_traction_force.cpp',
          'read_mesh.cpp',
          'mesh_tools.cpp',
-         'fill_internal_coordinates.cpp'
+         'fill_internal_coordinates.cpp',
+         'impose_homogeneous.cpp'
          ]),
   dependencies : [eigen, galerkin, tetmesh, symsparse])
 

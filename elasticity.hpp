@@ -371,6 +371,9 @@ void impose_homogeneous_condition(
     }
 }
 
+template <>
+void impose_homogeneous_condition(const MeshVariant &, StiffnessType &, size_t, double);
+
 struct OutOfBoundsIndex : public std::exception
 {
     const char *msg;
