@@ -327,23 +327,60 @@ template <class Mesh, class RHS>
 void impose_homogeneous_condition(
     const Mesh &mesh, StiffnessType &K, RHS &rhs, size_t which, double scale = 1.0)
 {
-    std::vector<size_t> adjacent;
-    adjacent.reserve(2 * max_node_adjacencies);
-    const auto &boundary = mesh.boundary(which);
-
-    for (auto n : boundary.nodes)
+    if constexpr (std::is_same_v<Mesh, MeshVariant>)
     {
-        adjacent.clear();
-        // Get all of the adjacent DOFs to this one; since there are two
-        // components of displacement there are 2 degrees of freedom (2*n,
-        // 2*n+1) corresponding to each node.
-        for (auto n2 : mesh.adjacent_nodes(n))
+        std::visit(
+            [&, which, scale](const auto &mesh)
+            { impose_homogeneous_condition(mesh, K, rhs, which, scale); },
+            mesh);
+    }
+    else
+    {
+        std::vector<size_t> adjacent;
+        adjacent.reserve(2 * max_node_adjacencies);
+        const auto &boundary = mesh.boundary(which);
+
+        for (auto n : boundary.nodes)
         {
-            adjacent.push_back(2 * n2);
-            adjacent.push_back(2 * n2 + 1);
+            adjacent.clear();
+            // Get all of the adjacent DOFs to this one; since there are two
+            // components of displacement there are 2 degrees of freedom (2*n,
+            // 2*n+1) corresponding to each node.
+            for (auto n2 : mesh.adjacent_nodes(n))
+            {
+                adjacent.push_back(2 * n2);
+                adjacent.push_back(2 * n2 + 1);
+            }
+            K.eliminate_dof(2 * n, 0.0, scale, rhs, adjacent);
+            K.eliminate_dof(2 * n + 1, 0.0, scale, rhs, adjacent);
         }
-        K.eliminate_dof(2 * n, 0.0, scale, rhs, adjacent);
-        K.eliminate_dof(2 * n + 1, 0.0, scale, rhs, adjacent);
+    }
+}
+
+struct PreEliminatedStiffness
+{
+};
+
+template <class Mesh, class RHS>
+void impose_homogeneous_condition(
+    const Mesh &mesh, PreEliminatedStiffness, RHS &rhs, size_t which)
+{
+    if constexpr (std::is_same_v<Mesh, MeshVariant>)
+    {
+        std::visit(
+            [&, which](const auto &mesh)
+            { impose_homogeneous_condition(mesh, PreEliminatedStiffness{}, rhs, which); },
+            mesh);
+    }
+    else
+    {
+        const auto &boundary = mesh.boundary(which);
+
+        for (auto n : boundary.nodes)
+        {
+            rhs.row(2 * n).array() = 0;
+            rhs.row(2 * n + 1).array() = 0;
+        }
     }
 }
 
