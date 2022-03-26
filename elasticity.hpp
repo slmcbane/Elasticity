@@ -381,35 +381,48 @@ struct OutOfBoundsIndex : public std::exception
     const char *what() const noexcept { return msg; }
 };
 
-template <class Mesh>
+template <class Mesh, class RHS>
 void impose_dirichlet_condition(
-    const Mesh &mesh, StiffnessType &K, Eigen::Matrix2Xd &forcing, size_t which,
-    const Eigen::Matrix2Xd &value, double scale = 1.0);
-
-extern template void impose_dirichlet_condition(
-    const Mesh1 &, StiffnessType &, Eigen::Matrix2Xd &, size_t, const Eigen::Matrix2Xd &, double);
-extern template void impose_dirichlet_condition(
-    const Mesh2 &, StiffnessType &, Eigen::Matrix2Xd &, size_t, const Eigen::Matrix2Xd &, double);
-
-#if ELASTICITY_MAX_ELEMENT_ORDER > 2
-extern template void impose_dirichlet_condition(
-    const Mesh3 &, StiffnessType &, Eigen::Matrix2Xd &, size_t, const Eigen::Matrix2Xd &, double);
-#endif
-
-#if ELASTICITY_MAX_ELEMENT_ORDER > 3
-extern template void impose_dirichlet_condition(
-    const Mesh4 &, StiffnessType &, Eigen::Matrix2Xd &, size_t, const Eigen::Matrix2Xd &, double);
-#endif
-
-template <>
-inline void impose_dirichlet_condition(
-    const MeshVariant &mv, StiffnessType &K, Eigen::Matrix2Xd &forcing, size_t which,
-    const Eigen::Matrix2Xd &value, double scale)
+    const Mesh &mesh, StiffnessType &K, RHS &rhs, size_t which, const Eigen::Matrix2Xd &value,
+    double scale = 1.0)
 {
-    std::visit(
-        [&, scale, which](const auto &mesh)
-        { impose_dirichlet_condition(mesh, K, forcing, which, value, scale); },
-        mv);
+    if constexpr (std::is_same_v<Mesh, MeshVariant>)
+    {
+        std::visit(
+            [&, which, scale](const auto &mesh)
+            { impose_dirichlet_condition(mesh, K, rhs, which, value, scale); },
+            mesh);
+    }
+    else
+    {
+        std::vector<size_t> adjacent;
+        adjacent.reserve(2 * max_node_adjacencies);
+        const auto &boundary = mesh.boundary(which);
+
+        if ((size_t)value.cols() != boundary.nodes.size())
+        {
+            throw OutOfBoundsIndex(
+                "Matrix given for Dirichlet condition has wrong number of values");
+        }
+        else if ((size_t)rhs.rows() != mesh.num_nodes() * 2)
+        {
+            throw OutOfBoundsIndex("RHS passed has wrong dimension - should be 2 * num_nodes");
+        }
+
+        size_t i = 0;
+        for (auto n : boundary.nodes)
+        {
+            adjacent.clear();
+            for (auto n2 : mesh.adjacent_nodes(n))
+            {
+                adjacent.push_back(2 * n2);
+                adjacent.push_back(2 * n2 + 1);
+            }
+            K.eliminate_dof(2 * n, value(0, i), scale, rhs, adjacent);
+            K.eliminate_dof(2 * n + 1, value(1, i), scale, rhs, adjacent);
+            i += 1;
+        }
+    }
 }
 
 template <class Force, class RHS>

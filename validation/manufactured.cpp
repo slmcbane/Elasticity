@@ -210,8 +210,9 @@ Eigen::Matrix2Xd solve(const MeshVariant &mv)
     tp_start = steady_clock::now();
     auto K_unassembled = Elasticity::assemble_stiffness(mv, lambda, mu);
 
-    Elasticity::impose_dirichlet_condition(mv, K_unassembled, nodal_forcing, right_bound, uright);
-    Elasticity::impose_dirichlet_condition(mv, K_unassembled, nodal_forcing, left_bound, uleft);
+    auto flat_forcing = nodal_forcing.reshaped();
+    Elasticity::impose_dirichlet_condition(mv, K_unassembled, flat_forcing, right_bound, uright);
+    Elasticity::impose_dirichlet_condition(mv, K_unassembled, flat_forcing, left_bound, uleft);
 
     auto K = convert_to_eigen(K_unassembled);
     tp_end = steady_clock::now();
