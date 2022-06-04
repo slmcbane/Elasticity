@@ -174,6 +174,11 @@ auto evaluate_on_mesh(const MeshVariant &mv, const F &func)
     return std::visit([&](const auto &mesh) { return evaluate_on_mesh(mesh, func); }, mv);
 }
 
+inline auto num_nodes(const MeshVariant &mv)
+{
+    return std::visit([](const auto &mesh) { return mesh.num_nodes(); }, mv);
+}
+
 /*
  * Higher-order meshes have nodes internal to elements to which we cannot
  * meaningfully assign coordinates in the mesh package. This function does the
