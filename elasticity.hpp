@@ -89,8 +89,8 @@ auto get_scalar_coeffs(const Mesh &mesh, size_t eli, const Eigen::VectorXd &uc)
     return coeffs;
 }
 
-template <class Mesh>
-auto get_vector_coeffs(const Mesh &mesh, size_t eli, const Eigen::Matrix2Xd &uc)
+template <class Mesh, class Matrix>
+auto get_vector_coeffs(const Mesh &mesh, size_t eli, const Matrix &uc)
 {
     const auto &el_info = mesh.element(eli);
     Eigen::Matrix<double, 2, std::decay_t<decltype(el_info)>::num_nodes()> coeffs;
